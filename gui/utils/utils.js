@@ -5,6 +5,29 @@ import {EventBus} from "@/utils/eventBus";
 import JSZip from "jszip";
 import moment from 'moment';
 
+const toolkitData = [
+  {name: 'Jira Toolkit', imageSrc: '/images/jira_icon.svg'},
+  {name: 'Email Toolkit', imageSrc: '/images/gmail_icon.svg'},
+  {name: 'Google Calendar Toolkit', imageSrc: '/images/google_calender_icon.svg'},
+  {name: 'GitHub Toolkit', imageSrc: '/images/github_icon.svg'},
+  {name: 'Google Search Toolkit', imageSrc: '/images/google_search_icon.svg'},
+  {name: 'Searx Toolkit', imageSrc: '/images/searx_icon.svg'},
+  {name: 'Slack Toolkit', imageSrc: '/images/slack_icon.svg'},
+  {name: 'Web Scrapper Toolkit', imageSrc: '/images/webscraper_icon.svg'},
+  {name: 'Twitter Toolkit', imageSrc: '/images/twitter_icon.svg'},
+  {name: 'Google SERP Toolkit', imageSrc: '/images/google_serp_icon.svg'},
+  {name: 'File Toolkit', imageSrc: '/images/filemanager_icon.svg'},
+  {name: 'CodingToolkit', imageSrc: '/images/app-logo-light.png'},
+  {name: 'Image Generation Toolkit', imageSrc: '/images/app-logo-light.png'},
+  {name: 'DuckDuckGo Search Toolkit', imageSrc: '/images/duckduckgo_icon.png'},
+];
+
+const fileTypeIcons = {
+  'application/pdf': '/images/pdf_file.svg',
+  'application/txt': '/images/txt_file.svg',
+  'text/plain': '/images/txt_file.svg',
+};
+
 export const getUserTimezone = () => {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
@@ -35,7 +58,7 @@ export const formatTimeDifference = (timeDifference) => {
 };
 
 export const formatNumber = (number) => {
-  if (number === null || number === undefined || number === 0) {
+  if (!number || number === 0) {
     return '0';
   }
 
@@ -53,7 +76,7 @@ export const formatNumber = (number) => {
 
 export const formatTime = (lastExecutionTime) => {
   try {
-    const parsedTime = new Date(lastExecutionTime + 'Z'); // append 'Z' to indicate UTC
+    const parsedTime = new Date(lastExecutionTime + 'Z');
     if (isNaN(parsedTime.getTime())) {
       throw new Error('Invalid time value');
     }
@@ -177,12 +200,10 @@ export const downloadAllFiles = (files, run_name) => {
 };
 
 export const refreshUrl = () => {
-  if (typeof window === 'undefined') {
-    return;
+  if (typeof window !== 'undefined') {
+    const urlWithoutToken = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, urlWithoutToken);
   }
-
-  const urlWithoutToken = window.location.origin + window.location.pathname;
-  window.history.replaceState({}, document.title, urlWithoutToken);
 };
 
 export const loadingTextEffect = (loadingText, setLoadingText, timer) => {
@@ -194,20 +215,18 @@ export const loadingTextEffect = (loadingText, setLoadingText, timer) => {
     setLoadingText(`${text}${dots}`);
   }, timer);
 
-  return () => clearInterval(interval)
-}
+  return () => clearInterval(interval);
+};
 
-export const openNewTab = (id, name, contentType, hasInternalId) => {
+export const openNewTab = (id, name, contentType, hasInternalId = false) => {
   EventBus.emit('openNewTab', {
-    element: {id: id, name: name, contentType: contentType, internalId: hasInternalId ? createInternalId() : 0}
+    element: { id, name, contentType, internalId: hasInternalId ? createInternalId() : 0 },
   });
-}
+};
 
 export const removeTab = (id, name, contentType, internalId) => {
-  EventBus.emit('removeTab', {
-    element: {id: id, name: name, contentType: contentType, internalId: internalId}
-  });
-}
+  EventBus.emit('removeTab', { element: { id, name, contentType, internalId } });
+};
 
 export const setLocalStorageValue = (key, value, stateFunction) => {
   stateFunction(value);
@@ -221,7 +240,7 @@ export const setLocalStorageArray = (key, value, stateFunction) => {
 }
 
 const getInternalIds = () => {
-  const internal_ids = localStorage.getItem("agi_internal_ids");
+  const internal_ids = localStorage.getItem('agi_internal_ids');
   return internal_ids ? JSON.parse(internal_ids) : [];
 }
 
@@ -311,7 +330,7 @@ export const createInternalId = () => {
   let newId = 1;
 
   if (typeof window !== 'undefined') {
-    let idsArray = getInternalIds();
+    const idsArray = getInternalIds();
     let found = false;
 
     for (let i = 1; !found; i++) {
@@ -329,46 +348,17 @@ export const createInternalId = () => {
 }
 
 export const returnToolkitIcon = (toolkitName) => {
-  const toolkitData = [
-    {name: 'Jira Toolkit', imageSrc: '/images/jira_icon.svg'},
-    {name: 'Email Toolkit', imageSrc: '/images/gmail_icon.svg'},
-    {name: 'Google Calendar Toolkit', imageSrc: '/images/google_calender_icon.svg'},
-    {name: 'GitHub Toolkit', imageSrc: '/images/github_icon.svg'},
-    {name: 'Google Search Toolkit', imageSrc: '/images/google_search_icon.svg'},
-    {name: 'Searx Toolkit', imageSrc: '/images/searx_icon.svg'},
-    {name: 'Slack Toolkit', imageSrc: '/images/slack_icon.svg'},
-    {name: 'Web Scrapper Toolkit', imageSrc: '/images/webscraper_icon.svg'},
-    {name: 'Twitter Toolkit', imageSrc: '/images/twitter_icon.svg'},
-    {name: 'Google SERP Toolkit', imageSrc: '/images/google_serp_icon.svg'},
-    {name: 'File Toolkit', imageSrc: '/images/filemanager_icon.svg'},
-    {name: 'CodingToolkit', imageSrc: '/images/app-logo-light.png'},
-    {name: 'Image Generation Toolkit', imageSrc: '/images/app-logo-light.png'},
-    {name: 'DuckDuckGo Search Toolkit', imageSrc: '/images/duckduckgo_icon.png'},
-  ];
-
   const toolkit = toolkitData.find((tool) => tool.name === toolkitName);
   return toolkit ? toolkit.imageSrc : '/images/custom_tool.svg';
 }
 
 export const returnResourceIcon = (file) => {
-  let fileIcon;
-  const fileTypeIcons = {
-    'application/pdf': '/images/pdf_file.svg',
-    'application/txt': '/images/txt_file.svg',
-    'text/plain': '/images/txt_file.svg',
-  };
-
-  if (file.type.includes('image')) {
-    fileIcon = '/images/img_file.svg';
-  } else {
-    fileIcon = fileTypeIcons[file.type] || '/images/default_file.svg';
-  }
-
-  return fileIcon;
+  const fileType = file?.type || '';
+  return fileType.includes('image') ? '/images/img_file.svg' : fileTypeIcons[fileType] || '/images/default_file.svg';
 };
 
 export const convertToTitleCase = (str) => {
-  if (str === null || str === '') {
+  if (!str) {
     return '';
   }
 
